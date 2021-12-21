@@ -173,16 +173,21 @@ class Individu:
 
         bestprenom=self.levenshteinPrenom(Prenom)
         bestNom=self.levenshteinNom(Nom)
-        for i in range(len(PrenomAvecSexe["01_prenom"])):
-            for j in bestprenom:
+        for j in bestprenom:
+            for i in range(len(PrenomAvecSexe["01_prenom"])):
                 if PrenomAvecSexe["01_prenom"][i]==j and PrenomAvecSexe["02_genre"][i]==sexe:
                     return j,bestNom[0]
+        # for i in range(len(PrenomAvecSexe["01_prenom"])):
+        #     for j in bestprenom:
+        #         if PrenomAvecSexe["01_prenom"][i]==j and PrenomAvecSexe["02_genre"][i]==sexe:
+        #             return j,bestNom[0]
         return bestprenom[0],bestNom[0]
     def ToString(self,Prenom,Nom,sexe):
         prenom,nom=self.PrenomAndNom(Prenom,Nom,sexe)
         return str(f"Le prenom cet individu est : {nom} et son prenom est : {prenom}")
     
-
+#Faut aussi faire une fonction distance de leven avec juste tout les mots pour ville,prefectuere adresse etc
+#supprimer les caractères speciaux
 """On fait aussi quelques tests ici :"""
 
 im = cv2.imread("/content/CNI3.png", cv2.IMREAD_COLOR)
@@ -219,4 +224,24 @@ img=remove_noise(img)
 print("new version :",ocr_core(img),'alpha')
 
 """Ici on réalise notre modèle :"""
+
+"""
+image_path_in_colab="/content/CNI3.png"
+extract = pytesseract.image_to_string(Image.open(image_path_in_colab))
+print(extract)
+print(type(extract))
+print(extract.strip())
+new_string = ''.join([l for l in extract if l.isalnum() or l == ' '])
+print(new_string)
+print(type(new_string))
+new_string2=new_string.replace('  ',' ')
+#Utiliser des replace comme replace('Nom',' Nom ')
+print(new_string2)
+print(type(new_string2))
+new_string3=new_string2.replace('Nom',' Nom ')
+new_string3=new_string3.replace('Pr',' Pr')
+#Utiliser des replace comme replace('Nom',' Nom ')
+print(new_string3)
+print(type(new_string3))
+"""
 
