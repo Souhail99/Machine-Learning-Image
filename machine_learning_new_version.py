@@ -10,7 +10,7 @@ Nous allons ici commencer le projet. La case en dessous y'a tout les import. La 
 """
 
 # Commented out IPython magic to ensure Python compatibility.
-# %matplotlib inline
+#%matplotlib inline
 
 #creer un fichier text pour installer les pip
 #!sudo apt install tesseract-ocr
@@ -87,7 +87,7 @@ def Rotation(img):
   image180=image.rotate(180)
   rotation='rotation'
   l=img.split('.')
-  imagegray.save(l[0]+rotation+l[1])
+  image180.save(l[0]+rotation+l[1])
   lien=l[0]+rotation+l[1]
   return lien
 
