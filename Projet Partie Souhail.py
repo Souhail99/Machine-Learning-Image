@@ -43,14 +43,14 @@ img = Image.open(ListedesimagesavecExtension[0])
 #On affiche la vrai image
 img.show() 
 
-filecsv="/home/guignole/Documents/Machine Learning Project/Machine-Learning-Image/Dataset"
+filecsv="/home/guignole/Documents/Machine Learning Project/Machine-Learning-Image/Dataset/"
 
 """Ici on fait notre classe qui s'appelle individu, individu correspond à un fichier image et donc une carte d'identité dans la base de données."""
 
 def LireCSV():
     Patronymes=pd.read_csv(filecsv+"patronymes.csv",sep=',')
     Prenom=pd.read_csv(filecsv+"prenom.csv",sep=',')
-    PrenomAvecSexe=pd.read_csv(filecsv+"Prenoms.csv",usecols=[2],sep=',')
+    PrenomAvecSexe=pd.read_csv(filecsv+"PrenomsEtSexe.csv",usecols=[2],sep=',')
     colonne=["01_prenom","02_genre"]
     #le genre est soit m (masculin) ou soit f (feminin)
     return Patronymes,Prenom,PrenomAvecSexe[colonne]
@@ -187,61 +187,66 @@ class Individu:
         return str(f"Le prenom cet individu est : {nom} et son prenom est : {prenom}")
     
 #Faut aussi faire une fonction distance de leven avec juste tout les mots pour ville,prefectuere adresse etc
-#supprimer les caractères speciaux
-"""On fait aussi quelques tests ici :"""
+def levenshteinMot(Mot:str):
+       taille_Mot1=len(Mot)+1
+       beta=[]
+       best=[]
+       #On prend les 5 meillerus mots
+       k=5
+       
+       #On liste le fichier texte dictionnaire mot français
+       Mot=open(filecsv+"mot francais.txt", "r")
+       Listedesmots=[]
+       for f in Mot.readlines():
+           Listedesmots.append(f.strip())
 
-im = cv2.imread("/content/CNI3.png", cv2.IMREAD_COLOR)
+       for i in range(len(Listedesmots)):
+            ecart=0
+            Mot2=Listedesmots[i]
+            taille_Mot2=len(Mot2)+1
+            levenshtein_matrice=np.zeros((taille_Mot1,taille_Mot2))
+            for x in range(taille_Mot1):
+                levenshtein_matrice[x,0]=x
+            for y in range(taille_Mot2):
+                levenshtein_matrice[0,y]=y
+            for x in range(1,taille_Mot1):
+                for y in range(1,taille_Mot2):
+                    if Mot[x-1]==Mot2[y-1]:
+                        levenshtein_matrice[x,y]=min(
+                    levenshtein_matrice[x-1, y] + 1,
+                    levenshtein_matrice[x-1, y-1],
+                    levenshtein_matrice[x, y-1] + 1)
+                    
+                    else:
+                        levenshtein_matrice[x,y]=min(
+                    levenshtein_matrice[x-1, y] + 1,
+                    levenshtein_matrice[x-1, y-1] + 1,
+                    levenshtein_matrice[x, y-1] + 1)
+            ecart=levenshtein_matrice[Mot - 1, Mot2 - 1]
+            beta.append([ecart,Mot,Mot2])
+       beta = sorted(beta, key = lambda x : x[0])
+       for x in range(k):
+           best.append(beta[x][-1])
+       return best[0]
 
-im = cv2.bitwise_not(im)
-plt.imshow(im)
-plt.show()
-
-image_path_in_colab="/content/CNI3.png"
-extract = pytesseract.image_to_string(Image.open(image_path_in_colab))
-print(extract)
 
 
+#supprimer les caractères speciaux, espace et ajout espace entre avant nom et prenom
+def SupCaracSpe(Mot:str):
+    new_string = ''.join([l for l in Mot if l.isalnum() or l == ' '])
+    new_string2=new_string.replace('  ',' ')
+    new_string3=new_string2.replace('Nom',' Nom')
+    new_string3=new_string3.replace('Pr',' Pr')
+    return new_string3
 
-def ocr_core(img):
-  text=pytesseract.image_to_string(img)
-  return text
-#img=Image.open('/content/CNI2.png')
-img=cv2.imread('/content/CNI3.png')
 
-def get_grayscale(img):
-  return cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
-def remove_noise(img):
-  return cv2.medianBlur(img,5)
-
-def thresholding(img):
-  return cv2.threshold(img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
-
-img=get_grayscale(img)
-img=thresholding(img)
-img=remove_noise(img)
-
-print("new version :",ocr_core(img),'alpha')
 
 """Ici on réalise notre modèle :"""
 
-"""
-image_path_in_colab="/content/CNI3.png"
-extract = pytesseract.image_to_string(Image.open(image_path_in_colab))
-print(extract)
-print(type(extract))
-print(extract.strip())
-new_string = ''.join([l for l in extract if l.isalnum() or l == ' '])
-print(new_string)
-print(type(new_string))
-new_string2=new_string.replace('  ',' ')
-#Utiliser des replace comme replace('Nom',' Nom ')
-print(new_string2)
-print(type(new_string2))
-new_string3=new_string2.replace('Nom',' Nom ')
-new_string3=new_string3.replace('Pr',' Pr')
-#Utiliser des replace comme replace('Nom',' Nom ')
-print(new_string3)
-print(type(new_string3))
-"""
+#Partie Traitement d'image
+#On reprend la variable img (sans qu'elle est soit modifié au préalable nécessaiire à comment notre modèle sera construit)
+import easyocr
 
+reader=easyocr.Reader(['fr'],gpu=False)
+result=reader.readtext(img)
+print(result)
